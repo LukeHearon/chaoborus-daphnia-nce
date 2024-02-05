@@ -1,3 +1,6 @@
+library(stringr)
+library(dplyr)
+
 # a function to break down refernces into the constituent information
   explode.ref <- function(refCol){
     explode <- str_split(refCol, pattern = "_", simplify = T) %>%

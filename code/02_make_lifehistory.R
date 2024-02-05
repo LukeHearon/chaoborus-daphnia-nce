@@ -1,6 +1,9 @@
 library(dplyr)
+library(data.table)
 
-data_change <- read.csv("./data/00_changeData.csv")
+data_change <- read.csv('./data/01_changeData.csv')
+
+source("./code/01_functions.R")
 
 #
 # Function library
@@ -41,39 +44,48 @@ data_change <- read.csv("./data/00_changeData.csv")
     return(R1)
   }
   
-  get.fate <- function(ref_in){
-    data_change %>%
-      filter(ref == ref_in) %>%
+  get_lifehistory <- function(ref_in){
+    sub <- data_change %>%
+      filter(ref == ref_in)
+    
+    fate <- sub %>%
       filter(day == max(.$day, na.rm = T)) %>%
       .$status
-  }
-  
-  get.day_fate <- function(ref_in){
-    data_change %>%
-      filter(ref == ref_in) %>%
-      filter(day == max(.$day, na.rm = T)) %>%
-      .$day
-  }
-  
-  get.infectionFate <- function(ref_in){
-    data_change %>%
-      filter(ref == ref_in) %>%
+    
+    day_fate <- max(sub$day, na.rm = T)
+    
+    infectionFate <- sub %>%
       filter(day == max(.$day, na.rm = T)) %>%
       {"yes" %in% .$infected}
-  }
-  
-  get.day_infection <- function(ref_in){
-    df <- data_change %>%
-      filter(ref == ref_in) %>%
-      filter(infected == "yes")
     
-    if(nrow(df) == 0){return(NULL)}
+    day_infection <- sub %>%
+      filter(infected == "yes") %>%
+      {ifelse(
+        nrow(.) == 0,
+        NA,
+        max(.$day, na.rm = T)
+      )}
+    
+    day_clutch1 <- sub %>%
+      filter(offspring > 0) %>%
+      .$day %>%
+      min() %>%
+      ifelse(. == Inf, NA, .)
+    
+    r1 <- calculate.r1(ref_in)
     
     return(
-      df %>%
-        {max(.$day, na.rm = T)}
+      data.frame(
+        fate = fate,
+        day_fate = day_fate,
+        infectionFate = infectionFate,
+        day_infection = day_infection,
+        day_clutch1 = day_clutch1,
+        r1 = r1
+      )
     )
   }
+  
 
 #
 # Data shaping
@@ -83,17 +95,15 @@ data_change <- read.csv("./data/00_changeData.csv")
     ref = data_change$ref %>%
       unique()
   ) %>%
-    mutate(
-      r1 = sapply(X = ref, FUN = calculate.r1),
-      fate = sapply(X = ref, FUN = get.fate),
-      day_fate = sapply(X = ref, FUN = get.day_fate),
-      infectionFate = sapply(X = ref, FUN = get.infectionFate),
-      day_infection = sapply(X = ref, FUN = get.day_infection)
+    bind_cols(
+      sapply(X = .$ref, FUN = explode.ref, simplify = F) %>%
+        rbindlist(),
+      sapply(X = .$ref, FUN = get_lifehistory, simplify = F) %>%
+        rbindlist()
     )
-
-    
+  
 write.csv(
   x = apply(repDF, 2, as.character),
-  file = "./data/01_lifehistoryData.csv",
+  file = "./data/02_lifehistoryData.csv",
   row.names = F
 )
