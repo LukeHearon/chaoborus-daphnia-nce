@@ -43,7 +43,12 @@ data_prediction <-  expand.grid(
       newdata = .
     ),
     
-    infectionRate = exp(infection_logodds)/(1 + exp(infection_logodds))
+    infectionRate = exp(infection_logodds)/(1 + exp(infection_logodds)),
+    clone = case_when( # make semantic
+      clone == 'c1' ~ 'Clear-1',
+      clone == 'm37' ~ 'Mid-37',
+      clone == 'w2' ~ 'W2'
+    )
   )
 
 plot <- ggplot(
@@ -53,10 +58,18 @@ plot <- ggplot(
     y = infectionRate,
     color = kairomone,
     linetype = kairomone,
-    group = interaction(clone, kairomone)
+    group = interaction(clone, kairomone),
+    label = clone
   )
 ) +
   geom_path() +
+  geom_text(
+    data=data_prediction %>% 
+      filter(r1 == max(data_prediction$r1)) %>%  # only label line ends
+      mutate(r1 = r1*1.12),  # nudge right
+    show.legend=F,
+    hjust=1
+  ) +
   
   scale_color_manual(values = colors, limits = force) +
   scale_linetype_manual(values = c("TRUE" = "solid", "FALSE" = "dashed"), guide = "none") +
@@ -71,10 +84,6 @@ plot <- ggplot(
     axis.line = element_line(colour = "black")
   ) 
 
-
-#
-# Write ----
-#
 
 #
 # Write ----
