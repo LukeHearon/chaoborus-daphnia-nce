@@ -137,15 +137,22 @@ library(lmerTest)
           filter(metsch == T, fate != "lost")
       )
       
-      models$logistic$susceptibility_rescue_feeding <- glmer(
-        infectionFate ~ kairomone + feedingRate + (1|clone) + (1|block), # clone as random because of low observation count
-        family = binomial,
-        data = data_wide %>%
-          filter(metsch == T, fate != "lost", assay == 1)
-      )
+      # models$logistic$susceptibility_rescue_feeding <- glmer(
+      #   infectionFate ~ kairomone + feedingRate + (1|clone) + (1|block), # clone as random because of low observation count
+      #   family = binomial,
+      #   data = data_wide %>%
+      #     filter(metsch == T, fate != "lost", assay == 1)
+      # )
   
 #
-# Saving object ----
+# Generate confidence intervals ----
+#
+  intervals <- list()
+  intervals$linear <- lapply(models$linear, confint)
+  intervals$logistic <- lapply(models$logistic, confint)
+  
+#
+# Saving objects ----
 #
   
   saveRDS(
@@ -153,5 +160,8 @@ library(lmerTest)
     file = './data/04_models.rds'
   )
   
-  
+  saveRDS(
+    intervals,
+    file = './data/04_intervals.rds'
+  )
   
