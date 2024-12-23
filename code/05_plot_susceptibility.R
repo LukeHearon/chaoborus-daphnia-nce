@@ -92,5 +92,5 @@ plot <- ggplot(
     './plots/plot_infection.svg',
     plot,
     width = 7,
-    height = 5
+    height = 4
   )

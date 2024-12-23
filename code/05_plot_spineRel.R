@@ -66,6 +66,7 @@
 #
   ggsave(
     './plots/plot_spineRel.svg',
+    plot=plot,
     width = 7,
     height = 5
   )
