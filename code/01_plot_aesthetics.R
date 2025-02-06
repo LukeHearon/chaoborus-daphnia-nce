@@ -11,12 +11,17 @@
     a45 = "#E3AD4F",
     st = "#47E645",
     "FALSE" = "#1155cc", # blue
-    "TRUE" = "#cc1111" # red
+    "TRUE" = "#cc1111", # red
+    "absent" = "#1155cc", # blue
+    "present" = "#cc1111" # red
   )
   
   linetypes <- c(
     "FALSE" = "dotted",
     "TRUE" = "solid",
+    
+    "absent" = "dotted",
+    "present" = "solid",
 
     "7" = "dashed",
     "14" = "solid",

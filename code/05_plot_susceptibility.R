@@ -49,6 +49,12 @@ data_prediction <-  expand.grid(
       clone == 'm37' ~ 'Mid-37',
       clone == 'w2' ~ 'W2'
     )
+  ) %>% 
+  mutate(
+    kairomone_sem = case_when(
+      kairomone ~ 'present',
+      T ~ 'absent'
+    )
   )
 
 plot <- ggplot(
@@ -56,9 +62,9 @@ plot <- ggplot(
   aes(
     x = r1,
     y = infectionRate,
-    color = kairomone,
-    linetype = kairomone,
-    group = interaction(clone, kairomone),
+    color = kairomone_sem,
+    # linetype = kairomone_sem,
+    group = interaction(clone, kairomone_sem),
     label = clone
   )
 ) +
@@ -72,10 +78,10 @@ plot <- ggplot(
   ) +
   
   scale_color_manual(values = colors, limits = force) +
-  scale_linetype_manual(values = c("TRUE" = "solid", "FALSE" = "dashed"), guide = "none") +
+  # scale_linetype_manual(values = linetypes) +
   ylab("Predicted infection rate") +
-  xlab("Reproductive fitness (r)") +
-  labs(color = "Kairomone presence", linetype = "Kairomone presence") +
+  xlab('Reproductive fitness (r)') +
+  labs(color = "Kairomone", linetype = "Kairomone") +
   theme_bw() +
   theme(
     panel.border = element_blank(),
@@ -89,8 +95,13 @@ plot <- ggplot(
 # Write ----
 #
   ggsave(
-    './plots/plot_infection.svg',
+    './plots/plot_susceptibility.svg',
     plot,
     width = 7,
     height = 4
+  )
+
+  saveRDS(
+    plot,
+    './plots/plot_susceptibility.rds'
   )

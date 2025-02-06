@@ -12,9 +12,18 @@
     {.$linear$spine}
   
   data_assay <- read.csv('./data/03_assayData.csv') %>%
+    filter(!spineBroken) %>%
     mutate(
-      label = interaction(metsch, clone)
-    )
+      metsch_sem = case_when(
+        metsch ~ 'present',
+        T ~ 'absent'
+      ),
+      
+      kairomone_sem = case_when(
+        kairomone ~ 'present',
+        T ~ 'absent'
+      )
+    ) 
   
   
 #
@@ -23,51 +32,48 @@
   plot <- ggplot(
     data_assay,
     aes(
-      x = day,
+      x = metsch_sem,
       y = spine,
-      color = clone,
-      linetype = clone,
-      shape = clone
+      color = kairomone_sem,
+      group = interaction(metsch_sem, kairomone_sem)
     )
   ) +
     
     # Geometry
     #
-    geom_point(alpha = 0.4, size = 2) +
-    geom_line(stat = "smooth", method = "lm") +
+    geom_boxplot() +
+    facet_grid(rows=vars(assay), labeller=labeller(assay = ~ paste("Assay ", .x))) +
     
     # Manual scales
     #
     scale_color_manual(values = colors, limits = force) +
-    scale_linetype_manual(
-      values = c(
-        "c1" = "solid",
-        "m37" = "dashed",
-        "w2" = "dotdash"
-      )
-    ) +
     
     # Theme
     #
     theme_bw() +
     
     theme(
-      panel.border = element_blank(),
+      # panel.border = element_blank(),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       axis.line = element_line(colour = "black")
     ) +
     
+    labs(color = "Kairomone") +
     ylab("Spine size (mm)") +
-    xlab("Day")
+    xlab("Metschnikowia")
   
 #
 # Write ----
 #
   ggsave(
-    './plots/plot_spineRel.svg',
+    './plots/plot_tradeoff.svg',
     plot=plot,
     width = 7,
     height = 5
   )
   
+  saveRDS(
+    plot,
+    './plots/plot_tradeoff.rds'
+  )
