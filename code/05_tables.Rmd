@@ -1,0 +1,50 @@
+---
+title: "tables"
+output:
+  bookdown::html_document2:
+    fig_caption: true
+    number_sections: false
+    global_numbering: true
+---
+
+```{r setup, include=FALSE, echo=F}
+  library(dplyr)
+  models <- readRDS('./data/04_models.rds')
+  knitr::opts_chunk$set(echo = F)
+  knitr::opts_chunk$set(include = T)
+  
+  roundsig <- function(x, d=2)  {
+    format(signif(x, digits=2), scientific=F)
+  }
+  
+  table_linear <- function(model){
+    intervals <- confint(model) %>% 
+      as.data.frame() %>% 
+      mutate(
+        .before=0,
+        coefficient = rownames(.)
+      ) %>% 
+      mutate(`95% CI` = paste0("(", roundsig(`2.5 %`, 2), ", ", roundsig(`97.5 %`, 2), ")")) %>% 
+      select(coefficient, `95% CI`)
+    
+    results <- summary(model)$coefficients %>% 
+      as.data.frame() %>% 
+      mutate(
+        .before=0,
+        coefficient = rownames(.),
+        across(
+          everything(),
+          ~ roundsig(.x, 2)
+        )
+      ) %>% 
+      left_join(intervals)
+    
+    table_raw <- knitr::kable(results, row.names=F)
+    return(table_raw)
+  }
+  
+```
+
+```{r tables-linear}
+  table_linear(models$linear$feedingRate)
+```

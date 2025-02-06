@@ -1,4 +1,16 @@
+# R project stuff
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+
+# working directories
+local/
+
+# plot binaries (we can keep .svgs, I guess)
+plots/*.rds
+
+# quarto files
+/.quarto/
+_quarto.yml
+_site/

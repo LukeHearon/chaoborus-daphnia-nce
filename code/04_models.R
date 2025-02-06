@@ -42,42 +42,34 @@ library(lmerTest)
   # Feeding rate
   #
     models$linear$feedingRate <- lmer(
-      feedingRate ~ clone + kairomone + metsch + day + (1|block) + (1|ref) + # main effects
-        (clone + kairomone + metsch)^2 + # two-way interactions, experimental factors
-        (metsch:day) + (kairomone:day) + # two-way interactions, effects of time
-        (clone:kairomone:metsch),
+      feedingRate ~ clone + kairomone + metsch + day + (1|block) + (1|ref),
       data = data_assay
     )
     
-    models$linear$feedingRate_bodyFactor <- lmer(
-      feedingRate ~ clone + kairomone + metsch + day + (1|block) + (1|ref) + # main effects
-        (clone + kairomone + metsch)^2 + # two-way interactions, experimental factors
-        (metsch:day) + (kairomone:day) + # two-way interactions, effects of time
-        (clone:kairomone:metsch) +
-        body, # add in body
+    models$linear$feedingRate_body <- lmer(
+      feedingRate ~ clone + kairomone + metsch + day + body + (1|block) + (1|ref),
       data = data_assay
     )
     
-    models$logistic$feedingRate_susceptibility <- lmer(
-      infectionFate ~ feedingRate + kairomone + (1|clone) + (1|block), # using feeding rate in the first assay as it has more observations
+    models$logistic$feedingRate_susceptibility <- glmer(
+      infectionFate ~ feedingRate + kairomone + (1|clone) + (1|block),  # clone as random due to low sample size
+      family = binomial,
       data = data_wide %>% 
-        filter(assay == 1, metsch == T)
+        filter(assay == 1, metsch == T)  # using feeding rate in the first assay as it has more observations
     )
   
   # Morphometrics
   #
-    
     # Spine
     #
-    
       models$linear$spine <- lmer(
-        spine ~ clone*kairomone*metsch * day + (1|block) + (1|block:ref), # having day in there with a 4-way interaction might be questionable, but the model is not at all sensitive to higher-order interactions
+        spine ~ kairomone*metsch + day + clone + (1|block) + (1|block:ref),
         data = data_assay %>%
           filter(spineBroken == F)
       )
       
       models$linear$spineRel <- lmer(
-        spineRel ~ clone*kairomone*metsch * day + (1|block) + (1|block:ref),
+        spineRel ~ kairomone*metsch + day + clone + (1|block) + (1|block:ref),
         data = data_assay %>%
           filter(spineBroken == F) %>% 
           mutate(spineRel = spine/body)
@@ -85,37 +77,37 @@ library(lmerTest)
     
       # rescue
       models$linear$spine_rescue_r1 <- lmer(
-        spine ~ clone*kairomone*metsch*day + r1 + (1|block) + (1|ref),
+        spine ~ kairomone*metsch + day + clone + r1 + (1|block) + (1|block:ref),
         data = data_wide %>% 
           filter(spineBroken == F)
       )
       
       models$linear$spine_rescue_feeding <- lmer(
-        spine ~ clone*kairomone*metsch*day + feedingRate + (1|block) + (1|ref),
+        spine ~ kairomone*metsch + day + clone + feedingRate + (1|block) + (1|block:ref),
         data = data_wide %>% 
           filter(spineBroken == F)
       )
       
-      
       models$linear$spineRel_rescue_r1 <- lmer(
-        spineRel ~ clone*kairomone*metsch*day + r1 + (1|block) + (1|ref),
+        spineRel ~ kairomone*metsch + day + clone + r1 + (1|block) + (1|block:ref),
         data = data_wide %>% 
           filter(spineBroken == F) %>% 
           mutate(spineRel = spine/body)
       )
       
       models$linear$spineRel_rescue_feeding <- lmer(
-        spineRel ~ clone*kairomone*metsch*day + feedingRate + (1|block) + (1|ref),
+        spineRel ~ kairomone*metsch + day + clone + feedingRate + (1|block) + (1|block:ref),
         data = data_wide %>% 
           filter(spineBroken == F) %>% 
           mutate(spineRel = spine/body)
       )
+
+      
   
     # body size
     #
-    
       models$linear$body <- lmer(
-        body ~ clone*kairomone*metsch * day + (1|block) + (1|block:ref),
+        body ~ kairomone*metsch + day + clone + (1|block) + (1|block:ref),
         data = data_assay
       )
         
@@ -137,14 +129,6 @@ library(lmerTest)
           filter(metsch == T, fate != "lost")
       )
       
-      # models$logistic$susceptibility_rescue_feeding <- glmer(
-      #   infectionFate ~ kairomone + feedingRate + (1|clone) + (1|block), # clone as random because of low observation count
-      #   family = binomial,
-      #   data = data_wide %>%
-      #     filter(metsch == T, fate != "lost", assay == 1)
-      # )
-  
-#
 # Generate confidence intervals ----
 #
   intervals <- list()
