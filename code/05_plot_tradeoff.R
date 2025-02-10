@@ -42,7 +42,7 @@
     # Geometry
     #
     geom_boxplot() +
-    facet_grid(rows=vars(assay), labeller=labeller(assay = ~ paste("Assay ", .x))) +
+    facet_grid(cols=vars(assay), labeller=labeller(assay = ~ paste("Assay ", .x))) +
     
     # Manual scales
     #
