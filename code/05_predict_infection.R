@@ -58,3 +58,5 @@ library(dplyr)
   if(scale=='relative'){return((predictions - infection_percent_baseline)/infection_percent_baseline)}
   }
   
+  predict_infection(0.3)
+  
